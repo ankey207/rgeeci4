@@ -1,12 +1,7 @@
 # Importation des modules nécessaires
 import streamlit as st
 import pandas as pd
-import time
-import os
 import function
-import plotly.express as px
-import geopandas as gpd
-import datetime
 
 
 st.set_page_config(page_title="RGEE-CI",layout="wide", initial_sidebar_state="auto", page_icon="logo_rgeeci.jpg")

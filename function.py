@@ -1,9 +1,5 @@
 import pandas as pd
-from io import StringIO
-import requests
 import streamlit as st
-import geopandas as gpd
-import regex as re
 from datetime import datetime
 
 liste_equipe = {
