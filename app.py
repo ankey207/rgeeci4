@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import function
+from datetime import datetime, timedelta
 
 
 st.set_page_config(page_title="RGEE-CI",layout="wide", initial_sidebar_state="auto", page_icon="logo_rgeeci.jpg")
@@ -23,7 +24,7 @@ df = function.get_data_from_forms(url)
 with st.sidebar:
     if st.button("ACTUALISER", type="primary"):
         function.get_data_from_forms.clear()
-    
+
     st.title("Filtre")
     SUP =df["Superviseur"].sort_values().unique()
     SUP_SELECT = st.selectbox("SUPERVISEURS:",SUP,index=None)
@@ -94,37 +95,65 @@ with container:
     col5.metric("Taux de réalisation ZD", f"{(ZD_total/569)*100:.2f}%")
     col6.metric("Refus", f"{REFUS:,}")
 
-
-st.markdown("<h5 style='text-align: center;color: #3a416c;'>TABLEAU DE SUIVI PAR EQUIPE</h5>", unsafe_allow_html=True)
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>RESULTAT PAR EQUIPE SUR LES 5 DERNIERS JOURS</h5>", unsafe_allow_html=True)
 pivot_df =  df[["date_reporting","Chef d'equipe","UE_total"]]
-#pivot_df = pivot_df.rename(columns={'s0q10':"date",'s0q9':"Agent"})
 pivot_df = pivot_df.pivot_table(index="Chef d'equipe", columns='date_reporting',values='UE_total', aggfunc='sum', fill_value=0)
-pivot_df["Ensemble"] = pivot_df.sum(axis=1)
+pivot_df["Total depuis le debut"] = pivot_df.sum(axis=1)
 
 sum_row = pivot_df.sum(axis=0)
 sum_row_df = pd.DataFrame(sum_row).T
 sum_row_df.index = ['Total']
 pivot_df = pd.concat([pivot_df, sum_row_df])
+
+# Obtenir la date actuelle
+ensemble_col = pivot_df['Total depuis le debut']
+date_columns = pd.to_datetime(pivot_df.columns.drop('Total depuis le debut'))
+
+# Obtenir la date actuelle
+today = datetime.now()
+five_days_ago = today - timedelta(days=5)
+filtered_columns = date_columns[date_columns >= five_days_ago]
+pivot_df = pivot_df[filtered_columns.strftime('%Y-%m-%d').tolist()+['Total depuis le debut']]
+
 st.table(function.style_dataframe(pivot_df))
-#st.table(pivot_df.style.applymap(function.cooling_highlight,subset=['Ensemble']))
 
-st.markdown("<h5 style='text-align: center;color: #3a416c;'>TABLEAU DE SUIVI PAR DEPARTEMENT</h5>", unsafe_allow_html=True)
-df_depart = df[["NomDep","UE formelle","UE informelle","UE_total","refus","Nombre ZD"]]
-df_depart = df_depart.groupby("NomDep").sum()
+#STATISTIQUE EQUIPE
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR EQUIPES</h5>", unsafe_allow_html=True)
+stat_ce = df[["Chef d'equipe","UE formelle","UE informelle","UE_total","refus","Nombre ZD"]]
+stat_ce = stat_ce.groupby("Chef d'equipe").sum()
+stat_ce.sort_values(by="UE_total",ascending=False,inplace=True)
+st.table(function.style_dataframe(stat_ce))
 
-sum_row = df_depart.sum(axis=0)
+#STATISTIQUES PAR DEPARTEMENT
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR DEPARTEMENT</h5>", unsafe_allow_html=True)
+stat_departement = df[["NomDep","UE formelle","UE informelle","UE_total","refus","Nombre ZD"]]
+stat_departement = stat_departement.groupby("NomDep").sum()
+
+sum_row = stat_departement.sum(axis=0)
 sum_row_df = pd.DataFrame(sum_row).T
 sum_row_df.index = ['Total']
-df_depart = pd.concat([df_depart, sum_row_df])
-st.table(function.style_dataframe(df_depart))
+stat_departement = pd.concat([stat_departement, sum_row_df])
+st.table(function.style_dataframe(stat_departement))
 
-#st.write(df_depart)
+#STATISTIQUES PAR SUPERVISEUR
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR SUPERVISEUR</h5>", unsafe_allow_html=True)
+stat_sup = df[["Superviseur","UE formelle","UE informelle","UE_total","refus","Nombre ZD"]]
+stat_sup = stat_sup.groupby("Superviseur").sum()
+st.table(function.style_dataframe(stat_sup))
 
-
-st.markdown("<h5 style='text-align: center;color: #3a416c;'>TABLEAU DE SUIVI PAR SUPERVISEUR</h5>", unsafe_allow_html=True)
-df_sup = df[["Superviseur","UE formelle","UE informelle","UE_total","refus","Nombre ZD"]]
-df_sup = df_sup.groupby("Superviseur").sum()
-st.table(function.style_dataframe(df_sup))
+#classement des AGENTS
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>CLASSEMENT AGENTS RECENSEURS</h5>", unsafe_allow_html=True)
+stat_agent = df[["nom_CE","UE_agent1","UE_agent2","UE_agent3"]]
+stat_agent =stat_agent.groupby("nom_CE").sum()
+stat_agent = stat_agent.reset_index()
+stat_agent = stat_agent.melt(id_vars=['nom_CE'], var_name='Agent', value_name='UE_Total')
+stat_agent['Nom_Agent'] = stat_agent['nom_CE'].str.replace('Ce', 'Agt')+stat_agent['Agent'].str[-1]
+stat_agent = stat_agent[["Nom_Agent","UE_Total"]]
+stat_agent.sort_values(by="UE_Total",ascending=False,inplace=True)
+stat_agent = function.add_agent_name(stat_agent)
+stat_agent = stat_agent.reset_index(drop=True)
+stat_agent.index = stat_agent.index + 1
+st.table(function.style_dataframe(stat_agent))
 
 footer="""<style>
     a:link , a:visited{
