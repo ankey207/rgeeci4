@@ -70,9 +70,9 @@ liste_ar = {
     "RGEECI_Agt01411": "YOUAN BI GOURE SEBASTIEN",
     "RGEECI_Agt01412": "GNEHO DOH PIERRE",
     "RGEECI_Agt01413": "SIDIBÉ AWA TATIANA FELICIENNE",
-    "RGEECI_Agt01421": "COULIBALY PELEOULE JUNIOR MALICK",
+    "RGEECI_Agt01421": "KAMBIRE SANKABANAN MARCELIN",
     "RGEECI_Agt01422": "SOM TOHO TECHLE",
-    "RGEECI_Agt01423": "KAMBIRE SANKABANAN MARCELIN"
+    "RGEECI_Agt01423": "COULIBALY PELEOULE JUNIOR MALICK"
 }
 
 def add_agent_name(df):
@@ -89,13 +89,15 @@ def convert_to_datetime(date_str):
     if isinstance(date_str, float):
         return 
     else:
-        return datetime.strptime(str(date_str), "%d/%m/%Y")
+        return datetime.strptime(str(date_str), "%Y-%m-%d").date()
 
 @st.cache_data
 def get_data_from_forms(url):
-    df = pd.read_csv(url,sep=';', dtype={"NumZD":"object"})
+    df = pd.read_csv(url,sep=';', dtype={"NumZD":'str'})
     df["Chef d'equipe"] = df["nom_CE"].map(liste_equipe)
     df["Superviseur"] = df["nom_CE"].map(liste_sup)
+    df['difficultes'] = df['difficultes'].str.upper()
+    df['observations'] = df['observations'].str.upper()
     df = df.rename(columns={"UEF_total":"UE formelle","UEI_total":"UE informelle","NbZD":"Nombre ZD","refus_total":"refus"})
     return df
 
@@ -133,3 +135,8 @@ def style_dataframe(df):
     styled_df.apply(row_style, axis=1)
 
     return styled_df
+
+def remove_duplicates_and_sort(zds):
+    zds_list = zds.split(', ')
+    zds_list_unique = sorted(list(dict.fromkeys(zds_list)))
+    return ', '.join(zds_list_unique)

@@ -105,7 +105,6 @@ sum_row_df = pd.DataFrame(sum_row).T
 sum_row_df.index = ['Total']
 pivot_df = pd.concat([pivot_df, sum_row_df])
 
-# Obtenir la date actuelle
 ensemble_col = pivot_df['Total depuis le debut']
 date_columns = pd.to_datetime(pivot_df.columns.drop('Total depuis le debut'))
 
@@ -114,7 +113,6 @@ today = datetime.now()
 five_days_ago = today - timedelta(days=5)
 filtered_columns = date_columns[date_columns >= five_days_ago]
 pivot_df = pivot_df[filtered_columns.strftime('%Y-%m-%d').tolist()+['Total depuis le debut']]
-
 st.table(function.style_dataframe(pivot_df))
 
 #STATISTIQUE EQUIPE
@@ -154,6 +152,33 @@ stat_agent = function.add_agent_name(stat_agent)
 stat_agent = stat_agent.reset_index(drop=True)
 stat_agent.index = stat_agent.index + 1
 st.table(function.style_dataframe(stat_agent))
+
+#liste des ZD deja acheves
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>LISTES DES ZD TRAITES</h5>", unsafe_allow_html=True)
+df_zd = df[["Chef d'equipe","NumZD"]]
+df_zd['ZD traites'] = df_zd['NumZD'].astype(str)
+df_zd = df_zd[(df_zd['ZD traites'] != '0000') & (df_zd['ZD traites'] != 'nan')]
+df_zd = df_zd.groupby("Chef d'equipe")['ZD traites'].agg(', '.join).reset_index()
+df_zd['ZD traites'] = df_zd['ZD traites'].apply(function.remove_duplicates_and_sort)
+st.table(function.style_dataframe(df_zd))
+
+#DIFFICULTES DU JOUR
+yesterday = datetime.now().date()-timedelta(days=1)
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>DIFFICULTES DU JOUR</h5>", unsafe_allow_html=True)
+df_difficultes_obs = df[["Chef d'equipe","difficultes","date_reporting","observations"]]
+df_difficultes_obs["date_reporting"] = df_difficultes_obs["date_reporting"].apply(function.convert_to_datetime)
+df_difficultes_obs = df_difficultes_obs[df_difficultes_obs["date_reporting"] >=yesterday]
+
+df_difficultes = df_difficultes_obs[~df_difficultes_obs['difficultes'].isna()]
+df_difficultes = df_difficultes.groupby("Chef d'equipe")['difficultes'].agg('/'.join).reset_index()
+st.table(function.style_dataframe(df_difficultes))
+
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>OBSERVATIONS DU JOUR</h5>", unsafe_allow_html=True)
+df_obs = df_difficultes_obs[~df_difficultes_obs['observations'].isna()]
+df_obs = df_obs.groupby("Chef d'equipe")['observations'].agg('/'.join).reset_index()
+st.table(function.style_dataframe(df_obs))
+
+
 
 footer="""<style>
     a:link , a:visited{
