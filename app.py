@@ -98,6 +98,7 @@ with container:
     col5.metric("Taux de réalisation ZD", f"{(ZD_total/569)*100:.2f}%")
     col6.metric("Refus", f"{REFUS:,}")
 
+#RESULTAT PAR EQUIPE SUR LES 5 DERNIERS JOURS
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>RESULTAT PAR EQUIPE SUR LES 5 DERNIERS JOURS</h5>", unsafe_allow_html=True)
 pivot_df =  df[["date_reporting","Chef d'equipe","UE_total"]]
 pivot_df = pivot_df.pivot_table(index="Chef d'equipe", columns='date_reporting',values='UE_total', aggfunc='sum', fill_value=0)
@@ -111,7 +112,6 @@ pivot_df = pd.concat([pivot_df, sum_row_df])
 ensemble_col = pivot_df['Total depuis le debut']
 date_columns = pd.to_datetime(pivot_df.columns.drop('Total depuis le debut'))
 
-# Obtenir la date actuelle
 today = datetime.now()
 five_days_ago = today - timedelta(days=5)
 filtered_columns = date_columns[date_columns >= five_days_ago]
@@ -155,6 +155,26 @@ stat_agent = function.add_agent_name(stat_agent)
 stat_agent = stat_agent.reset_index(drop=True)
 stat_agent.index = stat_agent.index + 1
 st.table(function.style_dataframe(stat_agent))
+
+#RESULTAT PAR AGENT SUR LES 5 DERNIERS JOURS
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>RESULTAT PAR AGENT SUR LES 5 DERNIERS JOURS</h5>", unsafe_allow_html=True)
+stat_agent_lastday =  df[["date_reporting","Chef d'equipe","nom_CE","UE_agent1","UE_agent2","UE_agent3"]]
+stat_agent_lastday = stat_agent_lastday.melt(id_vars=['date_reporting', 'Chef d\'equipe',"nom_CE"], 
+                 value_vars=['UE_agent1', 'UE_agent2', 'UE_agent3'], 
+                 var_name='Nom_Agent', 
+                 value_name='Value')
+stat_agent_lastday = stat_agent_lastday.pivot_table(index=['Chef d\'equipe',"nom_CE", 'Nom_Agent'], 
+                             columns='date_reporting', 
+                             values='Value').reset_index()
+stat_agent_lastday = stat_agent_lastday[['Chef d\'equipe',"nom_CE", 'Nom_Agent']+filtered_columns.strftime('%Y-%m-%d').tolist()]
+stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()] = stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()].astype(int)
+stat_agent_lastday['Nom_Agent'] = stat_agent_lastday['nom_CE'].str.replace('Ce', 'Agt')+stat_agent_lastday['Nom_Agent'].str[-1]
+stat_agent_lastday = function.add_agent_name(stat_agent_lastday)
+stat_agent_lastday.drop(columns=["nom_CE"],inplace=True)
+stat_agent_lastday.sort_values(by=['Chef d\'equipe', 'Nom_Agent'],ascending=True,inplace=True)
+stat_agent_lastday = stat_agent_lastday.reset_index(drop=True)
+stat_agent_lastday.index = stat_agent_lastday.index + 1
+st.table(function.style_dataframe(stat_agent_lastday))
 
 #liste des ZD deja acheves
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>LISTES DES ZD TRAITES</h5>", unsafe_allow_html=True)

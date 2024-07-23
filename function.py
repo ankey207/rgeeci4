@@ -101,7 +101,7 @@ def get_data_from_forms(url):
     df = df.rename(columns={"UEF_total":"UE formelle","UEI_total":"UE informelle","NbZD":"Nombre ZD","refus_total":"refus"})
     return df
 
-@st.cache_resource
+#@st.cache_resource
 def load_styles():
     with open('style.css') as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
