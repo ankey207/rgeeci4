@@ -82,13 +82,16 @@ REFUS = df["refus"].sum()
 UEI = df["UE informelle"].sum()
 UEF = df["UE formelle"].sum()
 
+UE_partiels = df.loc[df["date_reporting"]==str(datetime.now().date()),"partiels_total"].sum()
+
 ZD_total = len(liste_zd)
 container =st.container()
 with container:
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col3a = st.columns(4)
     col1.metric("UE", f"{UET:,}")
-    col2.metric("UE formelle", f"{UEF:,}")
-    col3.metric("UE informelle", f"{UEI:,}")
+    col2.metric("Formelle", f"{UEF:,}")
+    col3.metric("Informelle", f"{UEI:,}")
+    col3a.metric("Partiels", f"{UE_partiels:,}")
 with container:
     col4, col5, col6 = st.columns([2,3,2])
     col4.metric("ZDs traités", f"{ZD_total:,}")
