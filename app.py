@@ -82,7 +82,7 @@ REFUS = df["refus"].sum()
 UEI = df["UE informelle"].sum()
 UEF = df["UE formelle"].sum()
 
-UE_partiels = df.loc[df["date_reporting"]==str(datetime.now().date()),"partiels_total"].sum()
+UE_partiels = df.loc[df["date_reporting"]==str(datetime.now().date()-timedelta(days=1)),"partiels_total"].sum()
 
 ZD_total = len(liste_zd)
 container =st.container()
@@ -144,37 +144,30 @@ st.table(function.style_dataframe(stat_sup))
 
 #classement des AGENTS
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>CLASSEMENT AGENTS RECENSEURS</h5>", unsafe_allow_html=True)
-stat_agent = df[["nom_CE","UE_agent1","UE_agent2","UE_agent3"]]
-stat_agent =stat_agent.groupby("nom_CE").sum()
-stat_agent = stat_agent.reset_index()
-stat_agent = stat_agent.melt(id_vars=['nom_CE'], var_name='Agent', value_name='UE_Total')
-stat_agent['Nom_Agent'] = stat_agent['nom_CE'].str.replace('Ce', 'Agt')+stat_agent['Agent'].str[-1]
-stat_agent = stat_agent[["Nom_Agent","UE_Total"]]
-stat_agent.sort_values(by="UE_Total",ascending=False,inplace=True)
-stat_agent = function.add_agent_name(stat_agent)
-stat_agent = stat_agent.reset_index(drop=True)
-stat_agent.index = stat_agent.index + 1
-st.table(function.style_dataframe(stat_agent))
+stat_agent_lastday = df[["date_reporting","Chef d'equipe","nom_CE","UE_agent1","UE_agent2","UE_agent3"]]
+stat_agent_lastday = stat_agent_lastday.melt(id_vars=['date_reporting', 'Chef d\'equipe', "nom_CE"], 
+                                             value_vars=['UE_agent1', 'UE_agent2', 'UE_agent3'], 
+                                             var_name='Nom_Agent', 
+                                             value_name='Value')
 
-#RESULTAT PAR AGENT SUR LES 5 DERNIERS JOURS
-st.markdown("<h5 style='text-align: center;color: #3a416c;'>RESULTAT PAR AGENT SUR LES 5 DERNIERS JOURS</h5>", unsafe_allow_html=True)
-stat_agent_lastday =  df[["date_reporting","Chef d'equipe","nom_CE","UE_agent1","UE_agent2","UE_agent3"]]
-stat_agent_lastday = stat_agent_lastday.melt(id_vars=['date_reporting', 'Chef d\'equipe',"nom_CE"], 
-                 value_vars=['UE_agent1', 'UE_agent2', 'UE_agent3'], 
-                 var_name='Nom_Agent', 
-                 value_name='Value')
-stat_agent_lastday = stat_agent_lastday.pivot_table(index=['Chef d\'equipe',"nom_CE", 'Nom_Agent'], 
-                             columns='date_reporting', 
-                             values='Value').reset_index()
-stat_agent_lastday = stat_agent_lastday[['Chef d\'equipe',"nom_CE", 'Nom_Agent']+filtered_columns.strftime('%Y-%m-%d').tolist()]
-stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()] = stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()].astype(int)
-stat_agent_lastday['Nom_Agent'] = stat_agent_lastday['nom_CE'].str.replace('Ce', 'Agt')+stat_agent_lastday['Nom_Agent'].str[-1]
+stat_agent_lastday = stat_agent_lastday.pivot_table(index=['Chef d\'equipe', "nom_CE", 'Nom_Agent'], 
+                                                    columns='date_reporting', 
+                                                    values='Value').reset_index()
+
+# Remplacer les NaN par une valeur par défaut (par exemple 0)
+stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()] = stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()].fillna(0).astype(int)
+
+stat_agent_lastday['Nom_Agent'] = stat_agent_lastday['nom_CE'].str.replace('Ce', 'Agt') + stat_agent_lastday['Nom_Agent'].str[-1]
 stat_agent_lastday = function.add_agent_name(stat_agent_lastday)
-stat_agent_lastday.drop(columns=["nom_CE"],inplace=True)
-stat_agent_lastday.sort_values(by=['Chef d\'equipe', 'Nom_Agent'],ascending=True,inplace=True)
+stat_agent_lastday = stat_agent_lastday[['Chef d\'equipe',"nom_CE", 'Nom_Agent']+filtered_columns.strftime('%Y-%m-%d').tolist()]
+stat_agent_lastday.drop(columns=["nom_CE"], inplace=True)
+stat_agent_lastday.sort_values(by=['Chef d\'equipe', 'Nom_Agent'], ascending=True, inplace=True)
 stat_agent_lastday = stat_agent_lastday.reset_index(drop=True)
 stat_agent_lastday.index = stat_agent_lastday.index + 1
+
 st.table(function.style_dataframe(stat_agent_lastday))
+
+#RESULTAT PAR AGENT SUR LES 5 DERNIERS JOURS
 
 #liste des ZD deja acheves
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>LISTES DES ZD TRAITES</h5>", unsafe_allow_html=True)
