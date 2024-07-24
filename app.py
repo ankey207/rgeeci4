@@ -78,11 +78,12 @@ except:
     pass
 
 UET = df["UE_total"].sum()
-REFUS = df["refus"].sum()
 UEI = df["UE informelle"].sum()
 UEF = df["UE formelle"].sum()
 
 UE_partiels = df.loc[df["date_reporting"]==str(datetime.now().date()-timedelta(days=1)),"partiels_total"].sum()
+REFUS = df.loc[df["date_reporting"]==str(datetime.now().date()),"refus"].sum()
+
 
 ZD_total = len(liste_zd)
 container =st.container()
@@ -97,6 +98,7 @@ with container:
     col4.metric("ZDs traités", f"{ZD_total:,}")
     col5.metric("Taux de réalisation ZD", f"{(ZD_total/569)*100:.2f}%")
     col6.metric("Refus", f"{REFUS:,}")
+
 
 #RESULTAT PAR EQUIPE SUR LES 5 DERNIERS JOURS
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>RESULTAT PAR EQUIPE SUR LES 5 DERNIERS JOURS</h5>", unsafe_allow_html=True)
