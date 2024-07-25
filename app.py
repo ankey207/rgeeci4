@@ -77,13 +77,19 @@ try:
 except:
     pass
 
+current_date = pd.to_datetime(datetime.now().date())
+df["date_2"] =pd.to_datetime(df["date_reporting"])
+df.loc[df['date_2'] < current_date, 'partiels_total'] = 0
+df['partiels_total'] = df['partiels_total'].astype(int)
+
+df.loc[df['date_2'] < current_date, 'refus'] = 0
+df['refus'] = df['refus'].astype(int)
+
 UET = df["UE_total"].sum()
 UEI = df["UE informelle"].sum()
 UEF = df["UE formelle"].sum()
-
-UE_partiels = df.loc[df["date_reporting"]==str(datetime.now().date()-timedelta(days=1)),"partiels_total"].sum()
-REFUS = df.loc[df["date_reporting"]==str(datetime.now().date()),"refus"].sum()
-
+REFUS = df["refus"].sum()
+UE_partiels = df["partiels_total"].sum()
 
 ZD_total = len(liste_zd)
 container =st.container()
@@ -122,14 +128,14 @@ st.table(function.style_dataframe(pivot_df))
 
 #STATISTIQUE EQUIPE
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR EQUIPES</h5>", unsafe_allow_html=True)
-stat_ce = df[["Chef d'equipe","UE formelle","UE informelle","UE_total","refus","Nombre ZD"]]
+stat_ce = df[["Chef d'equipe","UE formelle","UE informelle","UE_total","partiels_total","refus","Nombre ZD"]]
 stat_ce = stat_ce.groupby("Chef d'equipe").sum()
 stat_ce.sort_values(by="UE_total",ascending=False,inplace=True)
 st.table(function.style_dataframe(stat_ce))
 
 #STATISTIQUES PAR DEPARTEMENT
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR DEPARTEMENT</h5>", unsafe_allow_html=True)
-stat_departement = df[["NomDep","UE formelle","UE informelle","UE_total","refus","Nombre ZD"]]
+stat_departement = df[["NomDep","UE formelle","UE informelle","UE_total","partiels_total","refus","Nombre ZD"]]
 stat_departement = stat_departement.groupby("NomDep").sum()
 
 sum_row = stat_departement.sum(axis=0)
@@ -140,7 +146,7 @@ st.table(function.style_dataframe(stat_departement))
 
 #STATISTIQUES PAR SUPERVISEUR
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR SUPERVISEUR</h5>", unsafe_allow_html=True)
-stat_sup = df[["Superviseur","UE formelle","UE informelle","UE_total","refus","Nombre ZD"]]
+stat_sup = df[["Superviseur","UE formelle","UE informelle","UE_total","partiels_total","refus","Nombre ZD"]]
 stat_sup = stat_sup.groupby("Superviseur").sum()
 st.table(function.style_dataframe(stat_sup))
 
