@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import function
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,time, timezone
 
 
 st.set_page_config(page_title="RGEE-CI",layout="wide", initial_sidebar_state="auto", page_icon="logo_rgeeci.jpg")
@@ -77,13 +77,22 @@ try:
 except:
     pass
 
-current_date = pd.to_datetime(datetime.now().date())
-df["date_2"] =pd.to_datetime(df["date_reporting"])
-df.loc[df['date_2'] < current_date, 'partiels_total'] = 0
-df['partiels_total'] = df['partiels_total'].astype(int)
 
-df.loc[df['date_2'] < current_date, 'refus'] = 0
+# Obtenez l'heure actuelle en GMT+0
+current_time = datetime.now(timezone.utc).time()
+current_date = pd.to_datetime(datetime.now().date())
+cutoff_time = time(17, 30)  # 17:30 in 24-hour format
+
+if current_time < cutoff_time:
+    df.loc[df['date_2']!=current_date-timedelta(days=1), 'partiels_total'] = 0
+    df.loc[df['date_2']!= current_date-timedelta(days=1), 'refus'] = 0
+else:
+    df.loc[df['date_2'] < current_date, 'partiels_total'] = 0
+    df.loc[df['date_2'] < current_date, 'refus'] = 0
+
+df['partiels_total'] = df['partiels_total'].astype(int)
 df['refus'] = df['refus'].astype(int)
+
 
 UET = df["UE_total"].sum()
 UEI = df["UE informelle"].sum()

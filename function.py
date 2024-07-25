@@ -99,6 +99,9 @@ def get_data_from_forms(url):
     df['difficultes'] = df['difficultes'].str.upper()
     df['observations'] = df['observations'].str.upper()
     df = df.rename(columns={"UEF_total":"UE formelle","UEI_total":"UE informelle","NbZD":"Nombre ZD","refus_total":"refus"})
+    df["date_2"] =pd.to_datetime(df["date_reporting"])
+
+
     return df
 
 #@st.cache_resource
