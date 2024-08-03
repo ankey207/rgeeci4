@@ -90,6 +90,24 @@ def convert_to_datetime(date_str):
         return 
     else:
         return datetime.strptime(str(date_str), "%Y-%m-%d").date()
+    
+def concatenate_zd_nomsp(row):
+    # Assurer que la valeur de NumZD est une chaîne de caractères
+    if pd.isna(row['NumZD']):
+        return "0000"
+    if not isinstance(row['NumZD'], str):
+        zds = str(row['NumZD']).split(',')
+    else:
+        zds = row['NumZD'].split(',')
+    
+    # Filtrer les chaînes vides
+    zds = [zd for zd in zds if zd != '']
+    
+    # Concaténer chaque ZD avec NomSp
+    concatenated_values = [f"{zd}_{row['NomSp']}" for zd in zds]
+    
+    return ','.join(concatenated_values)
+
 
 @st.cache_data
 def get_data_from_forms(url):
@@ -100,6 +118,7 @@ def get_data_from_forms(url):
     df['observations'] = df['observations'].str.upper()
     df = df.rename(columns={"UEF_total":"UE formelle","UEI_total":"UE informelle","NbZD":"Nombre ZD","refus_total":"refus"})
     df["date_2"] =pd.to_datetime(df["date_reporting"])
+    df["NumZD"] = df.apply(concatenate_zd_nomsp, axis=1)
 
 
     return df
@@ -143,3 +162,33 @@ def remove_duplicates_and_sort(zds):
     zds_list = zds.split(', ')
     zds_list_unique = sorted(list(dict.fromkeys(zds_list)))
     return ', '.join(zds_list_unique)
+
+def concat_list_zd(series):
+    # Utiliser un ensemble pour éliminer les doublons et conserver l'unicité
+    unique_elements = set(series.astype(str))
+    unique_elements = set(unique_elements)
+    # Convertir l'ensemble en liste pour assurer l'ordre si nécessaire
+    unique_list = list(unique_elements)
+    # Concaténer les valeurs uniques en une seule chaîne de caractères
+    return ','.join(unique_list)
+
+def delete_doublon_and_sort_from_list_zd(input_string):
+    # Séparer la chaîne en une liste d'éléments
+    elements = input_string.split(',')
+    
+    # Utiliser un ensemble pour éliminer les doublons et filtrer les éléments indésirables
+    unique_elements = {element for element in elements if "0000" not in str(element) and element.lower() != "nan"}
+    
+    # Convertir l'ensemble en liste et trier les éléments
+    sorted_elements = sorted(unique_elements)
+    
+    # Joindre les éléments triés en une seule chaîne
+    result = ','.join(sorted_elements)
+    
+    return result
+
+def count_unique_zd(input_string):
+    # Séparer la chaîne en une liste d'éléments
+    elements = input_string.split(',')    
+    # Retourner le nombre d'éléments uniques
+    return len(elements)
