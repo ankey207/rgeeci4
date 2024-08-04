@@ -195,7 +195,7 @@ stat_sup.set_index("Superviseur",inplace=True)
 st.table(function.style_dataframe(stat_sup))
 
 #classement des AGENTS
-st.markdown("<h5 style='text-align: center;color: #3a416c;'>CLASSEMENT AGENTS RECENSEURS</h5>", unsafe_allow_html=True)
+st.markdown("<h5 style='text-align: center;color: #3a416c;'>RESULTATS AGENTS RECENSEURS</h5>", unsafe_allow_html=True)
 stat_agent_lastday = df[["date_reporting","Chef d'equipe","nom_CE","UE_agent1","UE_agent2","UE_agent3"]]
 stat_agent_lastday = stat_agent_lastday.melt(id_vars=['date_reporting', 'Chef d\'equipe', "nom_CE"], 
                                              value_vars=['UE_agent1', 'UE_agent2', 'UE_agent3'], 
@@ -217,10 +217,6 @@ stat_agent_lastday.sort_values(by=['Chef d\'equipe', 'Nom_Agent'], ascending=Tru
 stat_agent_lastday = stat_agent_lastday.reset_index(drop=True)
 stat_agent_lastday.index = stat_agent_lastday.index + 1
 st.table(function.style_dataframe(stat_agent_lastday))
-
-
-#RESULTAT PAR AGENT SUR LES 5 DERNIERS JOURS
-
 
 #liste des ZD deja acheves
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>LISTES DES ZD TRAITES</h5>", unsafe_allow_html=True)

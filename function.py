@@ -143,11 +143,7 @@ def style_dataframe(df):
 
     # Colorier les lignes du corps en alternance en gris et blanc
     def row_style(row):
-        # Convertir row.name en entier si possible
-        try:
-            row_index = int(row.name)
-        except ValueError:
-            row_index = hash(row.name)
+        row_index = df.index.get_loc(row.name)  # Obtenir la position de la ligne
         
         if row_index % 2 == 0:
             return ['background-color: #ebecf0'] * len(row)
