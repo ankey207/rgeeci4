@@ -133,7 +133,7 @@ def get_data_from_forms(url):
     df = pd.read_csv(url,sep=';', dtype={"NumZD":'str'})
     df["Chef d'equipe"] = df["nom_CE"].map(liste_equipe)
     df["Superviseur"] = df["nom_CE"].map(liste_sup)
-    df["NbZD_VILLE"] = df["nom_CE"].map(zd_par_equipe)
+    df["ZD_affectees"] = df["nom_CE"].map(zd_par_equipe)
     df['difficultes'] = df['difficultes'].str.upper()
     df['observations'] = df['observations'].str.upper()
     df = df.rename(columns={"UEF_total":"UE F","UEI_total":"UE I","refus_total":"refus","partiels_total":"partiels"})

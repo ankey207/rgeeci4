@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 import function
 from datetime import datetime, timedelta,time, timezone
+import numpy as np
+
 
 
 st.set_page_config(page_title="RGEE-CI",layout="wide", initial_sidebar_state="auto", page_icon="logo_rgeeci.jpg")
@@ -139,7 +141,7 @@ st.table(function.style_dataframe(pivot_df))
 
 #STATISTIQUE EQUIPE
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR EQUIPES</h5>", unsafe_allow_html=True)
-stat_ce = df[["Chef d'equipe","UE F","UE I","UE_total","partiels","refus","NbZD","NumZD","NbZD_VILLE"]]
+stat_ce = df[["Chef d'equipe","UE F","UE I","UE_total","partiels","refus","NbZD","NumZD","ZD_affectees"]]
 stat_ce = stat_ce.groupby("Chef d'equipe").agg({
     "UE F": "sum",
     "UE I": "sum",
@@ -148,12 +150,12 @@ stat_ce = stat_ce.groupby("Chef d'equipe").agg({
     "refus": "sum",
     "NbZD": "sum",
     "NumZD": function.concat_list_zd,
-    "NbZD_VILLE": "first"
+    "ZD_affectees": "first"
 }).reset_index()
 
 stat_ce["NumZD"] = stat_ce["NumZD"].apply(function.delete_doublon_and_sort_from_list_zd)
 stat_ce["NbZD"] = stat_ce["NumZD"].apply(function.count_unique_zd)
-stat_ce["NbZD_VILLE"] =stat_ce["NbZD_VILLE"].astype("int")
+stat_ce["ZD_affectees"] =stat_ce["ZD_affectees"].astype("int")
 stat_ce.drop(columns="NumZD",inplace=True)
 stat_ce.sort_values(by="UE_total",ascending=False,inplace=True)
 stat_ce.set_index("Chef d'equipe",inplace=True)
@@ -213,8 +215,12 @@ stat_agent_lastday = stat_agent_lastday.melt(id_vars=['date_reporting', 'Chef d\
 stat_agent_lastday = stat_agent_lastday.pivot_table(index=['Chef d\'equipe', "nom_CE", 'Nom_Agent'], 
                                                     columns='date_reporting', 
                                                     values='Value').reset_index()
-stat_agent_lastday["Total depuis le debut"] = stat_agent_lastday.sum(axis=1)
-# Remplacer les NaN par une valeur par défaut (par exemple 0)
+numeric_columns = stat_agent_lastday.select_dtypes(include=[np.number]).columns.tolist()
+# Remplir les NaN avec 0
+stat_agent_lastday[numeric_columns] = stat_agent_lastday[numeric_columns].fillna(0)
+
+# Calculer la somme pour la colonne "Total depuis le debut"
+stat_agent_lastday["Total depuis le debut"] = stat_agent_lastday[numeric_columns].sum(axis=1)# Remplacer les NaN par une valeur par défaut (par exemple 0)
 stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()] = stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()].fillna(0).astype(int)
 
 stat_agent_lastday['Nom_Agent'] = stat_agent_lastday['nom_CE'].str.replace('Ce', 'Agt') + stat_agent_lastday['Nom_Agent'].str[-1]
