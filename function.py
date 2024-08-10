@@ -47,9 +47,9 @@ zd_par_equipe = {
     "RGEECI_Ce0140": 40,
     "RGEECI_Ce0141": 31,
     "RGEECI_Ce0142": 37,
-    "RGEECI_Ce0130": 70,
-    "RGEECI_Ce0131": 70,
-    "RGEECI_Ce0132": 70,
+    "RGEECI_Ce0130": 14,
+    "RGEECI_Ce0131": 8,
+    "RGEECI_Ce0132": 17,
 }
 
 liste_ar = {
