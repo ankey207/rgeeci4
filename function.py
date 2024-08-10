@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 from datetime import datetime
+import geopandas as gpd
 
 liste_equipe = {
     "RGEECI_Ce0130": "DJELI CLAVER KEVIN",
@@ -33,6 +34,24 @@ liste_sup = {
     "RGEECI_Ce0141": "AMANY",
     "RGEECI_Ce0142": "AMANY"
 }
+
+
+zd_par_equipe = {
+    "RGEECI_Ce0133": 24,
+    "RGEECI_Ce0134": 22,
+    "RGEECI_Ce0135": 38,
+    "RGEECI_Ce0136": 26,
+    "RGEECI_Ce0137": 28,
+    "RGEECI_Ce0138": 16,
+    "RGEECI_Ce0139": 26,
+    "RGEECI_Ce0140": 40,
+    "RGEECI_Ce0141": 31,
+    "RGEECI_Ce0142": 37,
+    "RGEECI_Ce0130": 70,
+    "RGEECI_Ce0131": 70,
+    "RGEECI_Ce0132": 70,
+}
+
 liste_ar = {
     "RGEECI_Agt01301": "KOUASSI KOFFI JULIEN",
     "RGEECI_Agt01302": "DAGOU DAZE THIERRY",
@@ -114,9 +133,10 @@ def get_data_from_forms(url):
     df = pd.read_csv(url,sep=';', dtype={"NumZD":'str'})
     df["Chef d'equipe"] = df["nom_CE"].map(liste_equipe)
     df["Superviseur"] = df["nom_CE"].map(liste_sup)
+    df["NbZD_VILLE"] = df["nom_CE"].map(zd_par_equipe)
     df['difficultes'] = df['difficultes'].str.upper()
     df['observations'] = df['observations'].str.upper()
-    df = df.rename(columns={"UEF_total":"UE formelle","UEI_total":"UE informelle","NbZD":"Nombre ZD","refus_total":"refus"})
+    df = df.rename(columns={"UEF_total":"UE F","UEI_total":"UE I","refus_total":"refus","partiels_total":"partiels"})
     df["date_2"] =pd.to_datetime(df["date_reporting"])
     df["NumZD"] = df.apply(concatenate_zd_nomsp, axis=1)
 
@@ -188,3 +208,10 @@ def count_unique_zd(input_string):
     elements = input_string.split(',')    
     # Retourner le nombre d'éléments uniques
     return len(elements)
+
+@st.cache_data
+def load_geozd(xpath):
+    geo_df = gpd.read_file(xpath,dtype={'NUM_ZD_NEW':'str'})
+    geo_df["NumZD"] = geo_df["NomSp"] +" "+geo_df["NUM_ZD_NEW"]
+    #geo_df = geo_df.set_index("CONTOUR")
+    return geo_df

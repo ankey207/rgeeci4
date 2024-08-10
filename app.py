@@ -21,6 +21,12 @@ function.load_styles()
 url = "https://kf.kobotoolbox.org/api/v2/assets/awexhpC92q5Xo3oA7G9DZg/export-settings/es7DwtyTCa6oPdBmbPsr8m8/data.csv"
 df = function.get_data_from_forms(url)
 
+#chargement de des contours des ZDs
+geo_df = function.load_geozd("Contour_NAWA.geojson")
+
+#Chargement du fichier d'attribution des ZD par équipes et merge avec les geodf
+#attribution_zd = function.get_data2("data/Attribution_ZD_EQ.csv")
+
 with st.sidebar:
     if st.button("ACTUALISER", type="primary"):
         function.get_data_from_forms.clear()
@@ -81,21 +87,21 @@ current_date = pd.to_datetime(datetime.now().date())
 cutoff_time = time(17, 30)  # 17:30 in 24-hour format
 
 if current_time < cutoff_time:
-    df.loc[df['date_2']!=current_date-timedelta(days=1), 'partiels_total'] = 0
+    df.loc[df['date_2']!=current_date-timedelta(days=1), 'partiels'] = 0
     df.loc[df['date_2']!= current_date-timedelta(days=1), 'refus'] = 0
 else:
-    df.loc[df['date_2'] < current_date, 'partiels_total'] = 0
+    df.loc[df['date_2'] < current_date, 'partiels'] = 0
     df.loc[df['date_2'] < current_date, 'refus'] = 0
 
-df['partiels_total'] = df['partiels_total'].astype(int)
+df['partiels'] = df['partiels'].astype(int)
 df['refus'] = df['refus'].astype(int)
 
 
 UET = df["UE_total"].sum()
-UEI = df["UE informelle"].sum()
-UEF = df["UE formelle"].sum()
+UEI = df["UE I"].sum()
+UEF = df["UE F"].sum()
 REFUS = df["refus"].sum()
-UE_partiels = df["partiels_total"].sum()
+UE_partiels = df["partiels"].sum()
 
 ZD_total = len(liste_zd)
 container =st.container()
@@ -133,19 +139,21 @@ st.table(function.style_dataframe(pivot_df))
 
 #STATISTIQUE EQUIPE
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR EQUIPES</h5>", unsafe_allow_html=True)
-stat_ce = df[["Chef d'equipe","UE formelle","UE informelle","UE_total","partiels_total","refus","Nombre ZD","NumZD"]]
+stat_ce = df[["Chef d'equipe","UE F","UE I","UE_total","partiels","refus","NbZD","NumZD","NbZD_VILLE"]]
 stat_ce = stat_ce.groupby("Chef d'equipe").agg({
-    "UE formelle": "sum",
-    "UE informelle": "sum",
+    "UE F": "sum",
+    "UE I": "sum",
     "UE_total": "sum",
-    "partiels_total": "sum",
+    "partiels": "sum",
     "refus": "sum",
-    "Nombre ZD": "sum",
-    "NumZD": function.concat_list_zd
+    "NbZD": "sum",
+    "NumZD": function.concat_list_zd,
+    "NbZD_VILLE": "first"
 }).reset_index()
 
 stat_ce["NumZD"] = stat_ce["NumZD"].apply(function.delete_doublon_and_sort_from_list_zd)
-stat_ce["Nombre ZD"] = stat_ce["NumZD"].apply(function.count_unique_zd)
+stat_ce["NbZD"] = stat_ce["NumZD"].apply(function.count_unique_zd)
+stat_ce["NbZD_VILLE"] =stat_ce["NbZD_VILLE"].astype("int")
 stat_ce.drop(columns="NumZD",inplace=True)
 stat_ce.sort_values(by="UE_total",ascending=False,inplace=True)
 stat_ce.set_index("Chef d'equipe",inplace=True)
@@ -153,19 +161,19 @@ st.table(function.style_dataframe(stat_ce))
 
 #STATISTIQUES PAR DEPARTEMENT
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR DEPARTEMENT</h5>", unsafe_allow_html=True)
-stat_departement = df[["NomDep","UE formelle","UE informelle","UE_total","partiels_total","refus","Nombre ZD","NumZD"]]
+stat_departement = df[["NomDep","UE F","UE I","UE_total","partiels","refus","NbZD","NumZD"]]
 #stat_departement = stat_departement.groupby("NomDep").sum()
 stat_departement = stat_departement.groupby("NomDep").agg({
-    "UE formelle": "sum",
-    "UE informelle": "sum",
+    "UE F": "sum",
+    "UE I": "sum",
     "UE_total": "sum",
-    "partiels_total": "sum",
+    "partiels": "sum",
     "refus": "sum",
-    "Nombre ZD": "sum",
+    "NbZD": "sum",
     "NumZD": function.concat_list_zd
 }).reset_index()
 stat_departement["NumZD"] = stat_departement["NumZD"].apply(function.delete_doublon_and_sort_from_list_zd)
-stat_departement["Nombre ZD"] = stat_departement["NumZD"].apply(function.count_unique_zd)
+stat_departement["NbZD"] = stat_departement["NumZD"].apply(function.count_unique_zd)
 stat_departement.drop(columns="NumZD",inplace=True)
 stat_departement.set_index("NomDep",inplace=True)
 sum_row = stat_departement.sum(axis=0)
@@ -176,20 +184,20 @@ st.table(function.style_dataframe(stat_departement))
 
 #STATISTIQUES PAR SUPERVISEUR
 st.markdown("<h5 style='text-align: center;color: #3a416c;'>STATISTIQUES PAR SUPERVISEUR</h5>", unsafe_allow_html=True)
-stat_sup = df[["Superviseur","UE formelle","UE informelle","UE_total","partiels_total","refus","Nombre ZD","NumZD"]]
+stat_sup = df[["Superviseur","UE F","UE I","UE_total","partiels","refus","NbZD","NumZD"]]
 #stat_sup = stat_sup.groupby("Superviseur").sum()
 
 stat_sup = stat_sup.groupby("Superviseur").agg({
-    "UE formelle": "sum",
-    "UE informelle": "sum",
+    "UE F": "sum",
+    "UE I": "sum",
     "UE_total": "sum",
-    "partiels_total": "sum",
+    "partiels": "sum",
     "refus": "sum",
-    "Nombre ZD": "sum",
+    "NbZD": "sum",
     "NumZD": function.concat_list_zd
 }).reset_index()
 stat_sup["NumZD"] = stat_sup["NumZD"].apply(function.delete_doublon_and_sort_from_list_zd)
-stat_sup["Nombre ZD"] = stat_sup["NumZD"].apply(function.count_unique_zd)
+stat_sup["NbZD"] = stat_sup["NumZD"].apply(function.count_unique_zd)
 stat_sup.drop(columns="NumZD",inplace=True)
 stat_sup.set_index("Superviseur",inplace=True)
 st.table(function.style_dataframe(stat_sup))
@@ -205,13 +213,14 @@ stat_agent_lastday = stat_agent_lastday.melt(id_vars=['date_reporting', 'Chef d\
 stat_agent_lastday = stat_agent_lastday.pivot_table(index=['Chef d\'equipe', "nom_CE", 'Nom_Agent'], 
                                                     columns='date_reporting', 
                                                     values='Value').reset_index()
-
+stat_agent_lastday["Total depuis le debut"] = stat_agent_lastday.sum(axis=1)
 # Remplacer les NaN par une valeur par défaut (par exemple 0)
 stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()] = stat_agent_lastday[filtered_columns.strftime('%Y-%m-%d').tolist()].fillna(0).astype(int)
 
 stat_agent_lastday['Nom_Agent'] = stat_agent_lastday['nom_CE'].str.replace('Ce', 'Agt') + stat_agent_lastday['Nom_Agent'].str[-1]
 stat_agent_lastday = function.add_agent_name(stat_agent_lastday)
-stat_agent_lastday = stat_agent_lastday[['Chef d\'equipe',"nom_CE", 'Nom_Agent']+filtered_columns.strftime('%Y-%m-%d').tolist()]
+stat_agent_lastday = stat_agent_lastday[['Chef d\'equipe',"nom_CE", 'Nom_Agent']+filtered_columns.strftime('%Y-%m-%d').tolist()+['Total depuis le debut']]
+stat_agent_lastday['Total depuis le debut'] = stat_agent_lastday['Total depuis le debut'].astype(int)
 stat_agent_lastday.drop(columns=["nom_CE"], inplace=True)
 stat_agent_lastday.sort_values(by=['Chef d\'equipe', 'Nom_Agent'], ascending=True, inplace=True)
 stat_agent_lastday = stat_agent_lastday.reset_index(drop=True)
