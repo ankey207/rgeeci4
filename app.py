@@ -4,8 +4,7 @@ import pandas as pd
 import function
 from datetime import datetime, timedelta,time, timezone
 import numpy as np
-
-
+import plotly.express as px
 
 st.set_page_config(page_title="RGEE-CI",layout="wide", initial_sidebar_state="auto", page_icon="logo_rgeeci.jpg")
 hide_st_style = """
@@ -23,11 +22,15 @@ function.load_styles()
 url = "https://kf.kobotoolbox.org/api/v2/assets/awexhpC92q5Xo3oA7G9DZg/export-settings/es7DwtyTCa6oPdBmbPsr8m8/data.csv"
 df = function.get_data_from_forms(url)
 
-#chargement de des contours des ZDs
-geo_df = function.load_geozd("Contour_NAWA.geojson")
-
 #Chargement du fichier d'attribution des ZD par équipes et merge avec les geodf
-#attribution_zd = function.get_data2("data/Attribution_ZD_EQ.csv")
+df_attribution_zd = function.get_data_attribution_eq("Attribution_zd.csv")
+#chargement des ZDs
+geo_df = function.load_geozd("Contour_NAWA.geojson")
+geo_df = geo_df.merge(df_attribution_zd[['NumZD', "NOM CHEF D'EQUIPE"]], on='NumZD', how='inner')
+
+#Coordonnées initiales pour l'affichage de la carte (Soubre)
+latitude_centre = 5.788289
+longitude_centre = -6.594167
 
 with st.sidebar:
     if st.button("ACTUALISER", type="primary"):
@@ -53,15 +56,22 @@ if len(df)!= 0 :
     try:
         if SUP_SELECT:
             df = df.loc[df['Superviseur']==SUP_SELECT]
+            latitude_centre = function.coords_superviseur[SUP_SELECT][0]
+            longitude_centre = function.coords_superviseur[SUP_SELECT][1]
 
         if CE_SELECT:
             df = df.loc[df["Chef d'equipe"]==CE_SELECT]
+            geo_df = geo_df.loc[geo_df["NOM CHEF D'EQUIPE"]==CE_SELECT]
 
         if REG_SELECT:
             df = df.loc[df["NomReg"]==REG_SELECT]
+            latitude_centre = function.coords_region[REG_SELECT][0]
+            longitude_centre = function.coords_region[REG_SELECT][1]
 
         if DEP_SELECT:
             df = df.loc[df["NomDep"]==DEP_SELECT]
+            latitude_centre = function.coords_departement[DEP_SELECT][0]
+            longitude_centre = function.coords_departement[DEP_SELECT][1]
 
         if SP_SELECT:
             df = df.loc[df["NomSp"]==SP_SELECT]
@@ -77,11 +87,17 @@ def split_and_collect(column):
             result.append(str(item))  # Convertit les autres types en chaîne de caractères et les ajoute à la liste
     return result
 
+
+#recupeeration coordonnees cnetroide en fonction de la zone geographique
+
+
 # Appliquer la fonction à la colonne
 liste_zd = split_and_collect(df['NumZD'])
 liste_zd = list(set(liste_zd))
 liste_zd = [s for s in liste_zd if "0000" not in s]
 
+#Identification des ZDs traiteees
+geo_df["Statut ZD"] = geo_df["NumZD"].apply(lambda x: function.statut_zd(x, liste_zd))
 
 # Obtenez l'heure actuelle en GMT+0
 current_time = datetime.now(timezone.utc).time()
@@ -257,6 +273,21 @@ st.markdown("<h5 style='text-align: center;color: #3a416c;'>OBSERVATIONS DU JOUR
 df_obs = df_difficultes_obs[~df_difficultes_obs['observations'].isna()]
 df_obs = df_obs.groupby("Chef d'equipe")['observations'].agg('/'.join).reset_index()
 st.table(function.style_dataframe(df_obs))
+
+# Création de la carte Folium
+
+fig = px.choropleth_mapbox(geo_df,
+    geojson=geo_df.geometry,
+    locations=geo_df.index,
+    #center={'lat':5.788289, 'lon':-6.594167},
+    center={'lat':latitude_centre, 'lon':longitude_centre},
+    mapbox_style="open-street-map",
+    zoom=11,opacity=0.2,color="Statut ZD",
+    color_discrete_map = {"Traité": "green", "Non traité": "red"},
+    hover_data = ["LibQtierCp","NumZD","NOM CHEF D'EQUIPE"]
+    )
+fig.update_layout(margin={"r":10,"t":10,"l":10,"b":10})
+st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
 
 

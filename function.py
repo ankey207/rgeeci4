@@ -34,7 +34,9 @@ liste_sup = {
     "RGEECI_Ce0141": "AMANY",
     "RGEECI_Ce0142": "AMANY"
 }
-
+coords_region = {"NAWA":[5.788289, -6.594167],"GBOKLE":[4.950852, -6.089824]}
+coords_superviseur = {"AMANY":[5.788289, -6.594167],"ADOU":[5.409237, -6.557446],"COULIBALY":[4.950852, -6.089824]}
+coords_departement = {"BUYO":[6.248728, -7.005931],"GUEYO":[5.686322, -6.073239],"MEAGUI":[5.409237, -6.557446],"SOUBRE":[5.788289, -6.594167],"SASSANDRA":[4.950852, -6.089824],"FRESCO":[5.110777, -5.586933]}
 
 zd_par_equipe = {
     "RGEECI_Ce0133": 24,
@@ -123,7 +125,7 @@ def concatenate_zd_nomsp(row):
     zds = [zd for zd in zds if zd != '']
     
     # Concaténer chaque ZD avec NomSp
-    concatenated_values = [f"{zd}_{row['NomSp']}" for zd in zds]
+    concatenated_values = [f"{row['NomSp']} {zd}" for zd in zds]
     
     return ','.join(concatenated_values)
 
@@ -174,11 +176,6 @@ def style_dataframe(df):
 
     return styled_df
 
-def remove_duplicates_and_sort(zds):
-    zds_list = zds.split(', ')
-    zds_list_unique = sorted(list(dict.fromkeys(zds_list)))
-    return ', '.join(zds_list_unique)
-
 def concat_list_zd(series):
     # Utiliser un ensemble pour éliminer les doublons et conserver l'unicité
     unique_elements = set(series.astype(str))
@@ -209,9 +206,21 @@ def count_unique_zd(input_string):
     # Retourner le nombre d'éléments uniques
     return len(elements)
 
+def statut_zd(zd,liste_zd):
+    if zd in liste_zd:
+        return "Traité"
+    else:
+        return "Non traité"
+
 @st.cache_data
 def load_geozd(xpath):
     geo_df = gpd.read_file(xpath,dtype={'NUM_ZD_NEW':'str'})
     geo_df["NumZD"] = geo_df["NomSp"] +" "+geo_df["NUM_ZD_NEW"]
     #geo_df = geo_df.set_index("CONTOUR")
     return geo_df
+
+@st.cache_data
+def get_data_attribution_eq(xpath):
+    return pd.read_csv(xpath, sep=';')
+
+
