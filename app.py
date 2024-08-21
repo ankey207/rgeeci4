@@ -23,7 +23,7 @@ url = "https://kf.kobotoolbox.org/api/v2/assets/awexhpC92q5Xo3oA7G9DZg/export-se
 df = function.get_data_from_forms(url)
 
 #Chargement du fichier d'attribution des ZD par équipes et merge avec les geodf
-df_attribution_zd = function.get_data_attribution_eq("Attribution_zd.csv")
+df_attribution_zd = function.get_data_attribution_eq_xlsx("Attribution_zd.xlsx")
 #chargement des ZDs
 geo_df = function.load_geozd("Contour_NAWA.geojson")
 geo_df = geo_df.merge(df_attribution_zd[['NumZD', "NOM CHEF D'EQUIPE"]], on='NumZD', how='inner')
@@ -31,6 +31,7 @@ geo_df = geo_df.merge(df_attribution_zd[['NumZD', "NOM CHEF D'EQUIPE"]], on='Num
 #Coordonnées initiales pour l'affichage de la carte (Soubre)
 latitude_centre = 5.788289
 longitude_centre = -6.594167
+Nb_ZD_initial = 569
 
 with st.sidebar:
     if st.button("ACTUALISER", type="primary"):
@@ -58,23 +59,28 @@ if len(df)!= 0 :
             df = df.loc[df['Superviseur']==SUP_SELECT]
             latitude_centre = function.coords_superviseur[SUP_SELECT][0]
             longitude_centre = function.coords_superviseur[SUP_SELECT][1]
+            Nb_ZD_initial = function.zd_sup[SUP_SELECT]
 
         if CE_SELECT:
             df = df.loc[df["Chef d'equipe"]==CE_SELECT]
             geo_df = geo_df.loc[geo_df["NOM CHEF D'EQUIPE"]==CE_SELECT]
+            Nb_ZD_initial = function.zd_region[REG_SELECT]
 
         if REG_SELECT:
             df = df.loc[df["NomReg"]==REG_SELECT]
             latitude_centre = function.coords_region[REG_SELECT][0]
             longitude_centre = function.coords_region[REG_SELECT][1]
+            Nb_ZD_initial = function.zd_region[REG_SELECT]
 
         if DEP_SELECT:
             df = df.loc[df["NomDep"]==DEP_SELECT]
             latitude_centre = function.coords_departement[DEP_SELECT][0]
             longitude_centre = function.coords_departement[DEP_SELECT][1]
+            Nb_ZD_initial = function.zd_departement[DEP_SELECT]
 
         if SP_SELECT:
             df = df.loc[df["NomSp"]==SP_SELECT]
+            Nb_ZD_initial = function.zd_sous_prefecture[SP_SELECT]
     except:
         pass
     
@@ -132,7 +138,7 @@ with container:
 with container:
     col4, col5, col6 = st.columns([2,3,2])
     col4.metric("ZDs traités", f"{ZD_total:,}")
-    col5.metric("Taux de réalisation ZD", f"{(ZD_total/569)*100:.2f}%")
+    col5.metric("Taux de réalisation ZD", f"{(ZD_total/Nb_ZD_initial)*100:.2f}%")
     col6.metric("Refus", f"{REFUS:,}")
 
 #RESULTAT PAR EQUIPE SUR LES 5 DERNIERS JOURS
@@ -172,6 +178,7 @@ stat_ce = stat_ce.groupby("Chef d'equipe").agg({
 stat_ce["NumZD"] = stat_ce["NumZD"].apply(function.delete_doublon_and_sort_from_list_zd)
 stat_ce["NbZD"] = stat_ce["NumZD"].apply(function.count_unique_zd)
 stat_ce["ZD_affectees"] =stat_ce["ZD_affectees"].astype("int")
+stat_ce["ZD restantes"] =stat_ce["ZD_affectees"] - stat_ce["NbZD"]
 stat_ce.drop(columns="NumZD",inplace=True)
 stat_ce.sort_values(by="UE_total",ascending=False,inplace=True)
 stat_ce.set_index("Chef d'equipe",inplace=True)
@@ -245,6 +252,11 @@ stat_agent_lastday = stat_agent_lastday[['Chef d\'equipe',"nom_CE", 'Nom_Agent']
 stat_agent_lastday['Total depuis le debut'] = stat_agent_lastday['Total depuis le debut'].astype(int)
 stat_agent_lastday.drop(columns=["nom_CE"], inplace=True)
 stat_agent_lastday.sort_values(by=['Chef d\'equipe', 'Nom_Agent'], ascending=True, inplace=True)
+
+stat_agent_lastday = stat_agent_lastday.rename(columns={'Total depuis le debut':"UE"})
+stat_agent_lastday= stat_agent_lastday[["Nom_Agent","UE"]]
+stat_agent_lastday = stat_agent_lastday.sort_values(by="UE", ascending=False)
+
 stat_agent_lastday = stat_agent_lastday.reset_index(drop=True)
 stat_agent_lastday.index = stat_agent_lastday.index + 1
 st.table(function.style_dataframe(stat_agent_lastday))

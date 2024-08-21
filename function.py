@@ -77,7 +77,7 @@ liste_ar = {
     "RGEECI_Agt01362": "KOUKOUGNON ISAAC ALAIN CHARLES",
     "RGEECI_Agt01363": "GOGUI ANGE FRANCKY",
     "RGEECI_Agt01371": "DIARRASSOUBA YOUSSOUF N'GOLO ANSELME",
-    "RGEECI_Agt01372": "KONE METAN GRÂCE SCHELA",
+    "RGEECI_Agt01372": "GAHI FLORENT PATRICK",
     "RGEECI_Agt01373": "SYLLA ISSOUF",
     "RGEECI_Agt01381": "MAVOU ZONRE FRANCOIS JOSUE",
     "RGEECI_Agt01382": "AHOUTOU FRANCK WILLIAMS LE ROY",
@@ -223,4 +223,50 @@ def load_geozd(xpath):
 def get_data_attribution_eq(xpath):
     return pd.read_csv(xpath, sep=';')
 
+@st.cache_data
+def get_data_attribution_eq_xlsx(xpath):
+    return pd.read_excel(xpath)
+
+zd_departement = {
+    "BUYO": 47,
+    "GUEYO": 31,
+    "MEAGUI": 108,
+    "SOUBRE": 263,
+    "FRESCO": 35,
+    "SASSANDRA": 85
+}
+
+zd_sous_prefecture = {
+    "BUYO": 38,
+    "DABOUYO": 12,
+    "DAPEOUA": 9,
+    "GNAMANGUI": 1,
+    "GRAND-ZATTRY": 30,
+    "GUEYO": 19,
+    "LILIYO": 26,
+    "MEAGUI": 89,
+    "OKROUYO": 11,
+    "OUPOYO": 18,
+    "SOUBRE": 196,
+    "DAHIRI": 5,
+    "DAKPADOU": 12,
+    "FRESCO": 21,
+    "GBAGBAM": 9,
+    "GRIHIRI": 9,
+    "LOBAKUYA": 4,
+    "MEDON": 6,
+    "SAGO": 12,
+    "SASSANDRA": 42
+}
+
+zd_region = {
+    "NAWA": 449,
+    "GBOKLE": 120
+}
+
+zd_sup = {
+    "AMANY": 294,
+    "ADOU": 155,
+    "COULIBALY": 120
+}
 
