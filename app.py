@@ -253,9 +253,9 @@ stat_agent_lastday['Total depuis le debut'] = stat_agent_lastday['Total depuis l
 stat_agent_lastday.drop(columns=["nom_CE"], inplace=True)
 stat_agent_lastday.sort_values(by=['Chef d\'equipe', 'Nom_Agent'], ascending=True, inplace=True)
 
-stat_agent_lastday = stat_agent_lastday.rename(columns={'Total depuis le debut':"UE"})
-stat_agent_lastday= stat_agent_lastday[["Nom_Agent","UE"]]
-stat_agent_lastday = stat_agent_lastday.sort_values(by="UE", ascending=False)
+#stat_agent_lastday = stat_agent_lastday.rename(columns={'Total depuis le debut':"UE"})
+#stat_agent_lastday= stat_agent_lastday[["Nom_Agent","UE"]]
+#stat_agent_lastday = stat_agent_lastday.sort_values(by="UE", ascending=False)
 
 stat_agent_lastday = stat_agent_lastday.reset_index(drop=True)
 stat_agent_lastday.index = stat_agent_lastday.index + 1
