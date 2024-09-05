@@ -25,13 +25,14 @@ df = function.get_data_from_forms(url)
 #Chargement du fichier d'attribution des ZD par équipes et merge avec les geodf
 df_attribution_zd = function.get_data_attribution_eq_xlsx("Attribution_zd.xlsx")
 #chargement des ZDs
-geo_df = function.load_geozd("Contour_NAWA.geojson")
-geo_df = geo_df.merge(df_attribution_zd[['NumZD', "NOM CHEF D'EQUIPE"]], on='NumZD', how='inner')
+geo_df = function.load_geozd("Contour_NAWA_GBOKLE.geojson")
+geo_df = geo_df.merge(df_attribution_zd[['NumZD', "NOM CHEF D'EQUIPE"]], on='NumZD', how='left')
+#st.write(geo_df[["NomSp",'NumZD', "NOM CHEF D'EQUIPE"]])
 
 #Coordonnées initiales pour l'affichage de la carte (Soubre)
 latitude_centre = 5.788289
 longitude_centre = -6.594167
-Nb_ZD_initial = 569
+Nb_ZD_initial = 704
 
 with st.sidebar:
     if st.button("ACTUALISER", type="primary"):
@@ -253,9 +254,9 @@ stat_agent_lastday['Total depuis le debut'] = stat_agent_lastday['Total depuis l
 stat_agent_lastday.drop(columns=["nom_CE"], inplace=True)
 stat_agent_lastday.sort_values(by=['Chef d\'equipe', 'Nom_Agent'], ascending=True, inplace=True)
 
-#stat_agent_lastday = stat_agent_lastday.rename(columns={'Total depuis le debut':"UE"})
-#stat_agent_lastday= stat_agent_lastday[["Nom_Agent","UE"]]
-#stat_agent_lastday = stat_agent_lastday.sort_values(by="UE", ascending=False)
+stat_agent_lastday = stat_agent_lastday.rename(columns={'Total depuis le debut':"UE"})
+stat_agent_lastday= stat_agent_lastday[["Nom_Agent","UE"]]
+stat_agent_lastday = stat_agent_lastday.sort_values(by="UE", ascending=False)
 
 stat_agent_lastday = stat_agent_lastday.reset_index(drop=True)
 stat_agent_lastday.index = stat_agent_lastday.index + 1
@@ -296,7 +297,7 @@ fig = px.choropleth_mapbox(geo_df,
     mapbox_style="open-street-map",
     zoom=11,opacity=0.2,color="Statut ZD",
     color_discrete_map = {"Traité": "green", "Non traité": "red"},
-    hover_data = ["LibQtierCp","NumZD","NOM CHEF D'EQUIPE"]
+    hover_data = ["LibQtierCpt","NumZD","NOM CHEF D'EQUIPE"]
     )
 fig.update_layout(margin={"r":10,"t":10,"l":10,"b":10})
 st.plotly_chart(fig, theme="streamlit", use_container_width=True)

@@ -39,16 +39,16 @@ coords_superviseur = {"AMANY":[5.788289, -6.594167],"ADOU":[5.409237, -6.557446]
 coords_departement = {"BUYO":[6.248728, -7.005931],"GUEYO":[5.686322, -6.073239],"MEAGUI":[5.409237, -6.557446],"SOUBRE":[5.788289, -6.594167],"SASSANDRA":[4.950852, -6.089824],"FRESCO":[5.110777, -5.586933]}
 
 zd_par_equipe = {
-    "RGEECI_Ce0133": 24,
-    "RGEECI_Ce0134": 22,
-    "RGEECI_Ce0135": 46,
-    "RGEECI_Ce0136": 26,
-    "RGEECI_Ce0137": 28,
-    "RGEECI_Ce0138": 16,
-    "RGEECI_Ce0139": 26,
-    "RGEECI_Ce0140": 27,
-    "RGEECI_Ce0141": 42,
-    "RGEECI_Ce0142": 34,
+    "RGEECI_Ce0133": 58,
+    "RGEECI_Ce0134": 54,
+    "RGEECI_Ce0135": 67,
+    "RGEECI_Ce0136": 74,
+    "RGEECI_Ce0137": 34,
+    "RGEECI_Ce0138": 39,
+    "RGEECI_Ce0139": 53,
+    "RGEECI_Ce0140": 57,
+    "RGEECI_Ce0141": 78,
+    "RGEECI_Ce0142": 70,
     "RGEECI_Ce0130": 14,
     "RGEECI_Ce0131": 8,
     "RGEECI_Ce0132": 17,
@@ -77,7 +77,7 @@ liste_ar = {
     "RGEECI_Agt01362": "KOUKOUGNON ISAAC ALAIN CHARLES",
     "RGEECI_Agt01363": "GOGUI ANGE FRANCKY",
     "RGEECI_Agt01371": "DIARRASSOUBA YOUSSOUF N'GOLO ANSELME",
-    "RGEECI_Agt01372": "GAHI FLORENT PATRICK",
+    "RGEECI_Agt01372": "KONE METAN GRACE / GAHI FLORENT PATRICK",
     "RGEECI_Agt01373": "SYLLA ISSOUF",
     "RGEECI_Agt01381": "MAVOU ZONRE FRANCOIS JOSUE",
     "RGEECI_Agt01382": "AHOUTOU FRANCK WILLIAMS LE ROY",
@@ -212,12 +212,7 @@ def statut_zd(zd,liste_zd):
     else:
         return "Non traité"
 
-@st.cache_data
-def load_geozd(xpath):
-    geo_df = gpd.read_file(xpath,dtype={'NUM_ZD_NEW':'str'})
-    geo_df["NumZD"] = geo_df["NomSp"] +" "+geo_df["NUM_ZD_NEW"]
-    #geo_df = geo_df.set_index("CONTOUR")
-    return geo_df
+
 
 @st.cache_data
 def get_data_attribution_eq(xpath):
@@ -228,26 +223,26 @@ def get_data_attribution_eq_xlsx(xpath):
     return pd.read_excel(xpath)
 
 zd_departement = {
-    "BUYO": 47,
-    "GUEYO": 31,
-    "MEAGUI": 108,
-    "SOUBRE": 263,
+    "BUYO": 74,
+    "GUEYO": 39,
+    "MEAGUI": 165,
+    "SOUBRE": 306,
     "FRESCO": 35,
     "SASSANDRA": 85
 }
 
 zd_sous_prefecture = {
-    "BUYO": 38,
-    "DABOUYO": 12,
-    "DAPEOUA": 9,
-    "GNAMANGUI": 1,
-    "GRAND-ZATTRY": 30,
-    "GUEYO": 19,
-    "LILIYO": 26,
-    "MEAGUI": 89,
+    "BUYO": 53,
+    "DABOUYO": 18,
+    "DAPEOUA": 21,
+    "GNAMANGUI": 19,
+    "GRAND-ZATTRY": 36,
+    "GUEYO": 21,
+    "LILIYO": 36,
+    "MEAGUI": 110,
     "OKROUYO": 11,
-    "OUPOYO": 18,
-    "SOUBRE": 196,
+    "OUPOYO": 32,
+    "SOUBRE": 223,
     "DAHIRI": 5,
     "DAKPADOU": 12,
     "FRESCO": 21,
@@ -260,13 +255,44 @@ zd_sous_prefecture = {
 }
 
 zd_region = {
-    "NAWA": 449,
+    "NAWA": 584,
     "GBOKLE": 120
 }
 
 zd_sup = {
-    "AMANY": 294,
-    "ADOU": 155,
+    "AMANY": 345,
+    "ADOU": 239,
     "COULIBALY": 120
 }
 
+soubre_list = [
+    "SOUBRE 0038",
+    "SOUBRE 0049",
+    "SOUBRE 0050",
+    "SOUBRE 0080",
+    "SOUBRE 0101",
+    "SOUBRE 0081",
+    "SOUBRE 0086",
+    "SOUBRE 0074",
+    "SOUBRE 0090",
+    "SOUBRE 0091",
+    "SOUBRE 0130",
+    "SOUBRE 0120",
+    "SOUBRE 0104",
+    "SOUBRE 0105",
+    "SOUBRE 0106",
+    "SOUBRE 0118",
+    "SOUBRE 0119",
+    "SOUBRE 0110",
+    "SOUBRE 0062",
+    "SOUBRE 0077"
+]
+
+
+@st.cache_data
+def load_geozd(xpath):
+    geo_df = gpd.read_file(xpath,dtype={'NUM_ZD_NEW':'str'})
+    geo_df["NumZD"] = geo_df["NomSp"] +" "+geo_df["NUM_ZD_NEW"]
+    #geo_df = geo_df[geo_df["NumZD"].isin(soubre_list)]
+    #geo_df = geo_df.set_index("CONTOUR")
+    return geo_df
