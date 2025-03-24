@@ -4,100 +4,59 @@ from datetime import datetime
 import geopandas as gpd
 
 liste_equipe = {
-    "RGEECI_Ce0130": "DJELI CLAVER KEVIN",
-    "RGEECI_Ce0131": "TRAORE ISSIAKA KY",
-    "RGEECI_Ce0132": "OUREGA JONAS CAMPBEL",
-    "RGEECI_Ce0133": "OREGA KADI JEPHTHE",
-    "RGEECI_Ce0134": "BLE GONDO FULGENCE",
-    "RGEECI_Ce0135": "AGO TOGBEDJI JACQUES",
-    "RGEECI_Ce0136": "FOFANA LACINE",
-    "RGEECI_Ce0137": "SOUNAN BERTIN JEAN CYRILLE",
-    "RGEECI_Ce0138": "N'GOTTA KOFFI FULGENCE ALAIN",
-    "RGEECI_Ce0139": "ASSI YAPO CONSTANT",
-    "RGEECI_Ce0140": "DANSI GEOFFROY FABIEN",
-    "RGEECI_Ce0141": "CAMARA LIATCHIN",
-    "RGEECI_Ce0142": "OUATTARA BAMADOU"
+    "CE0361": "DJATO ATTA KOUAME",
+    "CE0358": "KLARROU DIENOU JEAN JACQUES",
+    "CE0363": "AHOSSI ALLA ENOCH BLELEDJAN",
+    'CE0360':"KONE ANOKOUA RENÉ GUILLAUME",
+    'CE0359':"ALLIALI LORRAINE DESIRÉE",
+    'CE0362':"COULIBALY NARNOUNG AFFOUSSIATA",
+    'CE0357':"IRIE BI BOTTY FIACRE-ARTHUR",
 }
 
-liste_sup = {
-    "RGEECI_Ce0130": "COULIBALY",
-    "RGEECI_Ce0131": "COULIBALY",
-    "RGEECI_Ce0132": "COULIBALY",
-    "RGEECI_Ce0133": "ADOU",
-    "RGEECI_Ce0134": "ADOU",
-    "RGEECI_Ce0135": "AMANY",
-    "RGEECI_Ce0136": "ADOU",
-    "RGEECI_Ce0137": "AMANY",
-    "RGEECI_Ce0138": "AMANY",
-    "RGEECI_Ce0139": "ADOU",
-    "RGEECI_Ce0140": "AMANY",
-    "RGEECI_Ce0141": "AMANY",
-    "RGEECI_Ce0142": "AMANY"
-}
 coords_region = {"NAWA":[5.788289, -6.594167],"GBOKLE":[4.950852, -6.089824]}
 coords_superviseur = {"AMANY":[5.788289, -6.594167],"ADOU":[5.409237, -6.557446],"COULIBALY":[4.950852, -6.089824]}
 coords_departement = {"BUYO":[6.248728, -7.005931],"GUEYO":[5.686322, -6.073239],"MEAGUI":[5.409237, -6.557446],"SOUBRE":[5.788289, -6.594167],"SASSANDRA":[4.950852, -6.089824],"FRESCO":[5.110777, -5.586933]}
 
 zd_par_equipe = {
-    "RGEECI_Ce0133": 58,
-    "RGEECI_Ce0134": 54,
-    "RGEECI_Ce0135": 67,
-    "RGEECI_Ce0136": 74,
-    "RGEECI_Ce0137": 34,
-    "RGEECI_Ce0138": 39,
-    "RGEECI_Ce0139": 53,
-    "RGEECI_Ce0140": 57,
-    "RGEECI_Ce0141": 78,
-    "RGEECI_Ce0142": 70,
-    "RGEECI_Ce0130": 14,
-    "RGEECI_Ce0131": 8,
-    "RGEECI_Ce0132": 17,
+    "CE0361": 11,
+    "CE0358": 10,
+    "CE0363": 10
 }
 
+liste_sup={'CE0360':"SIAGOUE",
+'CE0359':"SIAGOUE",
+'CE0362':"SIAGOUE",
+'CE0357':"SIAGOUE",
+'CE0361':"AMANY",
+'CE0363':"AMANY",
+'CE0358':"AMANY"}
+
 liste_ar = {
-    "RGEECI_Agt01301": "KOUASSI KOFFI JULIEN",
-    "RGEECI_Agt01302": "DAGOU DAZE THIERRY",
-    "RGEECI_Agt01303": "GNAMBA LANDRY",
-    "RGEECI_Agt01311": "OUATTARA MAMADOU",
-    "RGEECI_Agt01312": "KOUASSI KOUADIO ANGE GAUTHIER",
-    "RGEECI_Agt01313": "AMANI AYA BENEDICTE",
-    "RGEECI_Agt01321": "AMANY YATCHIA STÉPHANIE",
-    "RGEECI_Agt01322": "BROU KOUAME NOKAN PACOME",
-    "RGEECI_Agt01323": "AHIZI YABA GISÈLE",
-    "RGEECI_Agt01331": "YOBOUET KONAN LEOPOLD",
-    "RGEECI_Agt01332": "KOUAKOU KONAN JEAN-LUC",
-    "RGEECI_Agt01333": "KOUASSI KOUADIO STEVEN",
-    "RGEECI_Agt01341": "AKAMOU N'DA EMMANUEL",
-    "RGEECI_Agt01342": "BOGUI JEAN-YVES",
-    "RGEECI_Agt01343": "ME N'GORAN HENRIETTE",
-    "RGEECI_Agt01351": "ISSIAKA BAYOUE",
-    "RGEECI_Agt01352": "DISSIA MONSIBBLE STÉPHANE CHARLY",
-    "RGEECI_Agt01353": "SERI GBALE ATTOUBE DÉBORAH",
-    "RGEECI_Agt01361": "KONAN YAO BLAISE",
-    "RGEECI_Agt01362": "KOUKOUGNON ISAAC ALAIN CHARLES",
-    "RGEECI_Agt01363": "GOGUI ANGE FRANCKY",
-    "RGEECI_Agt01371": "DIARRASSOUBA YOUSSOUF N'GOLO ANSELME",
-    "RGEECI_Agt01372": "KONE METAN GRACE / GAHI FLORENT PATRICK",
-    "RGEECI_Agt01373": "SYLLA ISSOUF",
-    "RGEECI_Agt01381": "MAVOU ZONRE FRANCOIS JOSUE",
-    "RGEECI_Agt01382": "AHOUTOU FRANCK WILLIAMS LE ROY",
-    "RGEECI_Agt01383": "SILUE LASSINA",
-    "RGEECI_Agt01391": "BINDE FRANCK ANICET",
-    "RGEECI_Agt01392": "DIABAGATE BASSORY",
-    "RGEECI_Agt01393": "OUATTARA AZOUMANA",
-    "RGEECI_Agt01401": "ÀMANI N'GORAN AUGUSTIN",
-    "RGEECI_Agt01402": "KOFFI KOUAME AIME CESAR",
-    "RGEECI_Agt01403": "BANON ROMARIC",
-    "RGEECI_Agt01411": "YOUAN BI GOURE SEBASTIEN",
-    "RGEECI_Agt01412": "GNEHO DOH PIERRE",
-    "RGEECI_Agt01413": "SIDIBÉ AWA TATIANA FELICIENNE",
-    "RGEECI_Agt01421": "KAMBIRE SANKABANAN MARCELIN",
-    "RGEECI_Agt01422": "SOM TOHO TECHLE",
-    "RGEECI_Agt01423": "COULIBALY PELEOULE JUNIOR MALICK"
+    "CE03611": "BEUGRE N’DA YAO OLIVIER",
+    "CE03612": "KOUABENAN YAO ISMAEL",
+    "CE03613": "N'DOLI NIAMIEN JULIANA EDWIGE",
+    "CE03581": "TAH ISAAC FAHD FADDHY ALASSANE",
+    "CE03582": "KOUASSI KOUADIO CYRILLE",
+    "CE03583": "KOUASSI KOUASSI ROMARIC",
+    "CE03631": "MAHI DAGBO DIEUDONNE",
+    "CE03632": "KONE LEGNMIN AIME",
+    "CE03633": "DIA AKA KOUASSI MATHIEU",
+    "CE03571": "DIOMANDE BLONDE",
+    "CE03572": "N'GUESSAN KHAN ARTHUR ARMAND",
+    "CE03573": "DIABY MAÏMOUNA",
+    "CE03591": "NGUESSAN KOFFI BOUTINOH",
+    "CE03592": "OUATTARA YAYA",
+    "CE03593": "Atse Anin Victoire",
+    "CE03601": "ASSE ADIBO ANTOINE JUNIOR",
+    "CE03602": "SILUE DOUFOUNGOGNON MARCEL WILFRIED",
+    "CE03603": "OUATTARA KADI ESTHER",
+    "CE03621": "DJAH AKRÉ",
+    "CE03622": "TIETIE HONTO JENNIFER",
+    "CE03623": "KOUASSI KOUADIO PRIVAT"
 }
 
 def add_agent_name(df):
-    df['Nom_Agent'] = df['Nom_Agent'].map(liste_ar)
+    df['Nom_Agent'] = df['Nom_Agent'].replace(liste_ar)
     return df
 
 def cooling_highlight(val):
@@ -125,7 +84,7 @@ def concatenate_zd_nomsp(row):
     zds = [zd for zd in zds if zd != '']
     
     # Concaténer chaque ZD avec NomSp
-    concatenated_values = [f"{row['NomSp']} {zd}" for zd in zds]
+    concatenated_values = [f"{zd}" for zd in zds]
     
     return ','.join(concatenated_values)
 
@@ -134,13 +93,13 @@ def concatenate_zd_nomsp(row):
 def get_data_from_forms(url):
     df = pd.read_csv(url,sep=';', dtype={"NumZD":'str'})
     df["Chef d'equipe"] = df["nom_CE"].map(liste_equipe)
-    df["Superviseur"] = df["nom_CE"].map(liste_sup)
     df["ZD_affectees"] = df["nom_CE"].map(zd_par_equipe)
     df['difficultes'] = df['difficultes'].str.upper()
     df['observations'] = df['observations'].str.upper()
     df = df.rename(columns={"UEF_total":"UE F","UEI_total":"UE I","refus_total":"refus","partiels_total":"partiels"})
     df["date_2"] =pd.to_datetime(df["date_reporting"])
     df["NumZD"] = df.apply(concatenate_zd_nomsp, axis=1)
+    df["Superviseur"] = df["nom_CE"].map(liste_sup)
 
 
     return df
