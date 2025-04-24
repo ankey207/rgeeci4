@@ -37,6 +37,7 @@ else:
     st.warning("Aucune data")
 
 st.write(df)
+st.write(function.liste_equipe )
 #Chargement du fichier d'attribution des ZD par équipes et merge avec les geodf
 #df_attribution_zd = function.get_data_attribution_eq_xlsx("Attribution_zd.xlsx")
 #chargement des ZDs
